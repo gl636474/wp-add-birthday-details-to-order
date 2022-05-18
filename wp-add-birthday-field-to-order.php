@@ -11,6 +11,12 @@ License: GPLv2 or later
 Text Domain: gcode_obf
 */
 
+
+// TODO: Add product metadata to "Require birthday details"
+// TODO: Add setting page option to show for all products or just specified
+// TODO: Add code to check for "require all" or >=1 specified products in order
+//       items in both front end and admin.
+
 define( 'OBF_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'OBF_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'GCBD_VERSION', '1.0.0');
