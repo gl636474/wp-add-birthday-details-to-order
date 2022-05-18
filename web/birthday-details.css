@@ -1,0 +1,75 @@
+
+/**
+ * The #gcodeobf-birthday-details-wrapper DIV is only present if we are showing
+ * both date and time fieldsets. If so, try to keep both date and time
+ * fieldsets on one line but allow wrapping.
+ */
+#gcodeobf-birthday-details-wrapper {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	align-items: baseline;
+}
+
+/**
+ * If showing both (see previous comment), add margin in between.
+ */
+#gcodeobf-birthday-details-wrapper #gcodeobf-date-wrapper {
+	margin-right: 1ex;
+}
+
+/**
+ * Within the date/time fieldsets, put the sub-fields on same row and don't
+ * allow wrapping, i.e. keep day/month/year together on same line.
+ */
+#gcodeobf-date-wrapper,
+#gcodeobf-time-wrapper {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	align-items: baseline;
+}
+
+/**
+ * Hide labels we don't want shown (but leave in HTML for screen readers).
+ * Very high priority, hence IDs and others in selectors
+ */
+#gcodeobf-date-wrapper p.form-row label.hidden,
+#gcodeobf-time-wrapper p.form-row label.hidden {
+	display: none;
+}
+
+/**
+ * Sub-fields all same height
+ */
+#gcodeobf-date-wrapper input,
+#gcodeobf-time-wrapper input {
+	height: 1.75rem;
+}
+
+/**
+ * Make day/hour/minute number sub-fields min width
+ */
+#gcodeobf-date-wrapper .gcodeobf_day,
+#gcodeobf-time-wrapper .gcodeobf_time {
+	width: 9ex;
+}
+
+/**
+ * Make year number sub-fields min width
+ */
+#gcodeobf-date-wrapper .gcodeobf_year {
+	width: 11ex;
+}
+
+/**
+ * Make separators between date/time sub-fields more obvious and give them
+ * some space.
+ */
+.gcobf_divider {
+	font-weight: bold;
+	margin-left: 0.25ex;
+	margin-right: 0.25ex;
+}
+
+ 
