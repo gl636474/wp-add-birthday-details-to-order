@@ -13,7 +13,6 @@ Text Domain: gcode_obf
 
 
 // TODO: Add product metadata to "Require birthday details"
-// TODO: Add setting page option to show for all products or just specified
 // TODO: Add code to check for "require all" or >=1 specified products in order
 //       items in both front end and admin.
 
@@ -35,12 +34,12 @@ const OBF_TEXT = 'gcode_obf';
  */
 if (is_admin())
 {
-    require_once OBF_PLUGIN_DIR . 'GCode/BirthdayDetails/AdminWooOrderFields.php';
+    require_once OBF_PLUGIN_DIR . 'GCode/BirthdayDetails/AdminEditOrder.php';
     require_once OBF_PLUGIN_DIR . 'GCode/BirthdayDetails/AdminSettings.php';
 }
 else 
 {
-    require_once OBF_PLUGIN_DIR . 'GCode/BirthdayDetails/FrontEndWooOrderFields.php';
+    require_once OBF_PLUGIN_DIR . 'GCode/BirthdayDetails/FrontEndCheckoutOrder.php';
 }
 
 /**
@@ -56,7 +55,7 @@ function gcodeobf_setup()
 {
     if ( is_admin() )
     {
-        $details = new \GCode\BirthdayDetails\AdminWooOrderFields();
+        $details = new \GCode\BirthdayDetails\AdminEditOrder();
         $details->register();
         
         $settings = new \GCode\BirthdayDetails\AdminSettings();
@@ -64,7 +63,7 @@ function gcodeobf_setup()
     }
     else 
     {
-        $details = new \GCode\BirthdayDetails\FrontEndWooOrderFields();
+        $details = new \GCode\BirthdayDetails\FrontEndCheckoutOrder();
         $details->register();
     }
     

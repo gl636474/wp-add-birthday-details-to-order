@@ -12,7 +12,7 @@ require_once OBF_PLUGIN_DIR . 'GCode/BirthdayDetails/WooOrderFields.php';
  *
  * @author gareth
  */
-class AdminWooOrderFields extends WooOrderFields
+class AdminEditOrder extends WooOrderFields
 {
     /**
      * Registers all necessary actions/filters to display the fields and parse

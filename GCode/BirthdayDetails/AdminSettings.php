@@ -32,10 +32,24 @@ class AdminSettings
     
     /**
      * ID for the section of our settings page which deals with which fields
-     * are enabled and what type of input they are.
+     * are enabled. 
      * @var string
      */
-    protected const FIELDS_SECTION_ID = 'obf-settings-fields-section';
+    protected const FIELDS_ENABLED_SECTION_ID = 'obf-fields-enabled-section';
+    
+    /**
+     * ID for the section of our settings page which deals with what type of
+     * input each field is
+     * @var string
+     */
+    protected const FIELDS_TYPE_SECTION_ID = 'obf-fields-type-section';
+    
+    /**
+     * ID for the section of our settings page which deals with what type of
+     * input each field is
+     * @var string
+     */
+    protected const FIELDS_WHEN_SHOWN_SECTION_ID = 'obf-fields-when-shown-section';
     
     /**
      * Cache of options for a 'field enabled' select input.
@@ -137,32 +151,37 @@ class AdminSettings
         // Default to existing values
         $validated = get_option(Config::FIELD_OPTIONS);
         
+        // Field disabled/optional/required settings
         $date_enabled = $options[Config::DATE_ENABLED_KEY] ?? null;
         if (in_array($date_enabled, $valid_enabled_values))
         {
             $validated[Config::DATE_ENABLED_KEY] = $date_enabled;
         }
-        
         $time_enabled = $options[Config::TIME_ENABLED_KEY] ?? null;
         if (in_array($date_enabled, $valid_enabled_values))
         {
             $validated[Config::TIME_ENABLED_KEY] = $time_enabled;
         }
-        
         $place_enabled = $options[Config::PLACE_ENABLED_KEY] ?? null;
         if (in_array($date_enabled, $valid_enabled_values))
         {
             $validated[Config::PLACE_ENABLED_KEY] = $place_enabled;
         }
         
+        // Show field as dropdown/number-input settings
         if (isset($options[Config::DATE_AS_SELECT_KEY]))
         {
             $validated[Config::DATE_AS_SELECT_KEY] = boolval($options[Config::DATE_AS_SELECT_KEY]);
         }
-        
         if (isset($options[Config::TIME_AS_SELECT_KEY]))
         {
             $validated[Config::TIME_AS_SELECT_KEY] = boolval($options[Config::TIME_AS_SELECT_KEY]);
+        }
+        
+        // When to show settings
+        if (isset($options[Config::SHOW_ALWAYS_KEY]))
+        {
+            $validated[Config::SHOW_ALWAYS_KEY] = boolval($options[Config::SHOW_ALWAYS_KEY]);
         }
         
         return $validated;
@@ -198,40 +217,56 @@ class AdminSettings
      */
     public function register_sections_and_fields ()
     {
-        add_settings_section(self::FIELDS_SECTION_ID,
-            __("Birthday Details Fields", OBF_TEXT),
-            null, // no section preamble
+        add_settings_section(self::FIELDS_ENABLED_SECTION_ID,
+            __("Which birthday fields to show", OBF_TEXT),
+            array($this, 'render_fields_enabled_preamble'),
             self::PAGE_ID);
         
         add_settings_field('obf-date-enabled',
             __('Display Birth Date', OBF_TEXT),
             array($this, 'render_birth_date_enabled_field'),
             self::PAGE_ID,
-            self::FIELDS_SECTION_ID);
-        
-        add_settings_field('obf-date-type',
-            __('Birth Date Input Type', OBF_TEXT),
-            array($this, 'render_birth_date_type_field'),
-            self::PAGE_ID,
-            self::FIELDS_SECTION_ID);
+            self::FIELDS_ENABLED_SECTION_ID);
         
         add_settings_field('obf-time-enabled',
             __('Display Birth Time', OBF_TEXT),
             array($this, 'render_birth_time_enabled_field'),
             self::PAGE_ID,
-            self::FIELDS_SECTION_ID);
-        
-        add_settings_field('obf-time-type',
-            __('Birth Time Input Type', OBF_TEXT),
-            array($this, 'render_birth_time_type_field'),
-            self::PAGE_ID,
-            self::FIELDS_SECTION_ID);
+            self::FIELDS_ENABLED_SECTION_ID);
         
         add_settings_field('obf-place-enabled',
             __('Display Birth Place', OBF_TEXT),
             array($this, 'render_birth_place_enabled_field'),
             self::PAGE_ID,
-            self::FIELDS_SECTION_ID);
+            self::FIELDS_ENABLED_SECTION_ID);
+        
+        add_settings_section(self::FIELDS_TYPE_SECTION_ID,
+            __("How to show birthday fields", OBF_TEXT),
+            array($this, 'render_fields_type_preamble'),
+            self::PAGE_ID);
+        
+        add_settings_field('obf-date-type',
+            __('Birth Date Input Type', OBF_TEXT),
+            array($this, 'render_birth_date_type_field'),
+            self::PAGE_ID,
+            self::FIELDS_TYPE_SECTION_ID);
+        
+        add_settings_field('obf-time-type',
+            __('Birth Time Input Type', OBF_TEXT),
+            array($this, 'render_birth_time_type_field'),
+            self::PAGE_ID,
+            self::FIELDS_TYPE_SECTION_ID);
+        
+        add_settings_section(self::FIELDS_WHEN_SHOWN_SECTION_ID,
+            __("When to show birthday fields", OBF_TEXT),
+            array($this, 'render_when_shown_preamble'),
+            self::PAGE_ID);
+        
+        add_settings_field('obf-when-to-show',
+            __('Show fields', OBF_TEXT),
+            array($this, 'render_when_shown_field'),
+            self::PAGE_ID,
+            self::FIELDS_WHEN_SHOWN_SECTION_ID);
     }
      
     /**
@@ -265,6 +300,54 @@ class AdminSettings
     }
 
     /**
+     * Echos out the HTML snippet which is the preamble for the "Fields
+     * enabled" section;
+     */
+    public function render_fields_enabled_preamble()
+    {
+        ?>
+        <ul>
+        	<li>Disabled - Do not show the field</li>
+        	<li>Enabled - Show the field but allow it to be empty</li>
+        	<li>Required - Show the field and require a value to be entered</li>
+        </ul> 
+        <?php 
+    }
+    
+    /**
+     * Echos out the HTML snippet which is the preamble for the "Fields
+     * type" section;
+     */
+    public function render_fields_type_preamble()
+    {
+        ?>
+        <ul>
+        	<li>Dropdown - Value must be selected from a list</li>
+        	<li>Number Input - A text box into which a number is typed</li> 
+        </ul> 
+        <?php 
+    }
+    
+    /**
+     * Echos out the HTML snippet which is the preamble for the "When to 
+     * show" section;
+     */
+    public function render_when_shown_preamble()
+    {
+        ?>
+        The enabled/required birthday details fields can optionally only be
+        shown when one or more configured products are being purchased. To
+        enable this feature, select "Product dependent" and for each product
+        for which birthday details should be captured:
+        <ol>
+        	<li>Go to the "Edit Product" page for that product</li>
+        	<li>Scroll down to the "Product data" box</li>
+        	<li>Click "Requires birthday details" under the "General" tab</li>
+      	</ol>
+        <?php 
+    }
+    
+    /**
      * Renders the select to determine whether the date fields are displayed.
      * @param array $args
      */
@@ -274,7 +357,8 @@ class AdminSettings
             Config::FIELD_OPTIONS.'['.Config::DATE_ENABLED_KEY.']',
             $this->get_enabled_options(),
             Config::instance()->get_date_option(),
-            $args['label_for'] ?? 'date-enabled');
+            $args['label_for'] ?? 'date-enabled',
+        );
     }
     
     /**
@@ -287,7 +371,8 @@ class AdminSettings
             Config::FIELD_OPTIONS.'['.Config::TIME_ENABLED_KEY.']',
             $this->get_enabled_options(),
             Config::instance()->get_time_option(),
-            $args['label_for'] ?? 'time-enabled');
+            $args['label_for'] ?? 'time-enabled',
+        );
     }
     
     /**
@@ -300,7 +385,8 @@ class AdminSettings
             Config::FIELD_OPTIONS.'['.Config::PLACE_ENABLED_KEY.']',
             $this->get_enabled_options(),
             Config::instance()->get_place_option(),
-            $args['label_for'] ?? 'place-enabled');
+            $args['label_for'] ?? 'place-enabled',
+        );
     }
         
     /**
@@ -313,7 +399,9 @@ class AdminSettings
             Config::FIELD_OPTIONS.'['.Config::DATE_AS_SELECT_KEY.']',
             $this->get_input_type_options(),
             Config::instance()->date_as_select(),
-            $args['label_for'] ?? 'date-type');
+            $args['label_for'] ?? 'date-type',
+            __('Month (if shown) will always be a dropdown even if day/year is a number input.', OBF_TEXT),
+        );
     }
     
     /**
@@ -326,7 +414,28 @@ class AdminSettings
             Config::FIELD_OPTIONS.'['.Config::TIME_AS_SELECT_KEY.']',
             $this->get_input_type_options(),
             Config::instance()->time_as_select(),
-            $args['label_for'] ?? 'time-type');
+            $args['label_for'] ?? 'time-type',
+        );
+    }
+    
+    /**
+     * Renders the select to determine when birthday details fields are
+     * displayed.
+     * @param array $args
+     */
+    public function render_when_shown_field($args)
+    {
+        $show_options = array(
+            true  => __("Always", OBF_TEXT),
+            false => __("Product dependent", OBF_TEXT),
+        );
+        
+        $this->render_select(
+            Config::FIELD_OPTIONS.'['.Config::SHOW_ALWAYS_KEY.']',
+            $show_options,
+            Config::instance()->show_always(),
+            $args['label_for'] ?? 'show-always'
+        );
     }
     
     /**

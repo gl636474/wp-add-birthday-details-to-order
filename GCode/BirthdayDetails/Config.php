@@ -85,6 +85,14 @@ class Config
     public const TIME_AS_SELECT_KEY = 'gcobf_time_select';
     
     /**
+     * WordPress get_option() key which determines whether to always show the
+     * birthday fields (true) or only when a configured product is in the cart
+     * (false).
+     * @var string
+     */
+    public const SHOW_ALWAYS_KEY = 'gcobf_show_always';
+    
+    /**
      * The singleton instance of this class.
      * @var Config
      */
@@ -216,5 +224,14 @@ class Config
     public function place_required()
     {
         return $this->get_place_option() == self::FIELD_REQUIRED;
+    }
+
+    /**
+     * Determines whether to always show the enabled/required birthday fields.
+     * @return boolean true for always, false for product-dependent.
+     */
+    public function show_always()
+    {
+        return get_option(self::FIELD_OPTIONS)[self::SHOW_ALWAYS_KEY] ?? null;
     }
 }
