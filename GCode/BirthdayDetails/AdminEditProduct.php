@@ -33,7 +33,7 @@ class AdminEditProduct extends WooProductFields
      */
     public function create_custom_birthday_fields()
     {
-        // Wordpress global - the ID of the post being viewed/edited
+        // WordPress global - the ID of the post being viewed/edited
         global $thepostid;
         
         // This actually echos out the HTML field - always output this field
