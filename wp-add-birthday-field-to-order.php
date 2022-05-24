@@ -35,6 +35,7 @@ const OBF_TEXT = 'gcode_obf';
 if (is_admin())
 {
     require_once OBF_PLUGIN_DIR . 'GCode/BirthdayDetails/AdminEditOrder.php';
+    require_once OBF_PLUGIN_DIR . 'GCode/BirthdayDetails/AdminEditProduct.php';
     require_once OBF_PLUGIN_DIR . 'GCode/BirthdayDetails/AdminSettings.php';
 }
 else 
@@ -57,6 +58,9 @@ function gcodeobf_setup()
     {
         $details = new \GCode\BirthdayDetails\AdminEditOrder();
         $details->register();
+        
+        $product_config = new \GCode\BirthdayDetails\AdminEditProduct();
+        $product_config->register();
         
         $settings = new \GCode\BirthdayDetails\AdminSettings();
         $settings->register();
