@@ -3,6 +3,7 @@ namespace GCode\BirthdayDetails;
 
 require_once OBF_PLUGIN_DIR . 'GCode/BirthdayDetails/Config.php';
 require_once OBF_PLUGIN_DIR . 'GCode/BirthdayDetails/WooOrderFields.php';
+require_once OBF_PLUGIN_DIR . 'GCode/BirthdayDetails/WooProductFields.php';
 
 /**
  * Outputs fields to a front end WooCommerce Order for birthday date, time and
@@ -229,10 +230,12 @@ class FrontEndCheckoutOrder extends WooOrderFields
      *         the field is empty and optional or <code>false</code> if the
      *         field content is invalid.
      */
-    protected function validate_number_in_post_data($id, $required, $title, &$errors, $min=null, $max=null)
+    protected function validate_number_in_post_data($id, $required, $title, $errors, $min=null, $max=null)
     {
+        // ?? operator returns 2nd arg when value in 1st arg array is null
+        // Note that empty(0)==true and empty("0")==true
         $value = $_POST[$id] ?? '';
-        if (empty($value))
+        if ($value==='')
         {
             if ($required)
             {
@@ -296,6 +299,35 @@ class FrontEndCheckoutOrder extends WooOrderFields
     }
     
     /**
+     * Determines whether the current cart requires birthday details to be
+     * captured. This is true if either:
+     * <ul>
+     * <li>birthday details should always be captured</li>
+     * <li>one or more products in the cart items requires birth details</li>
+     * </ul>
+     *
+     * @return boolean whether birthday details need to be captured.
+     */
+    protected function cart_requires_birthday_details()
+    {
+        if (Config::instance()->show_always())
+        {
+            return true;
+        }
+        
+        /* @var array $cart_item */
+        foreach (WC()->cart->get_cart_contents() as $cart_item)
+        {
+            $product = $cart_item['data'] ?? null;
+            if ($product instanceof \WC_Product && WooProductFields::requires_birth_details($product))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
      * Callback function to be called by WordPress.
      * 
      * Output the birthday details heading and fields. What is displayed and
@@ -305,9 +337,13 @@ class FrontEndCheckoutOrder extends WooOrderFields
      */
     public function display_birthday_fields()
     {
+        if (!$this->cart_requires_birthday_details())
+        {
+            return;
+        }
+        
         $display_date = Config::instance()->date_enabled();
         $display_time = Config::instance()->time_enabled();
-        $display_date_and_time = $display_date && $display_time;
         $display_place = Config::instance()->place_enabled();
         
         if ($display_date || $display_time || $display_place)
@@ -316,7 +352,7 @@ class FrontEndCheckoutOrder extends WooOrderFields
         }
         
         // If displaying both date and time, put them in an 'outer' flexbox
-        if ($display_date_and_time)
+        if ($display_date && $display_time)
         {
             $this->display_start_div(array('id'=>'gcodeobf-birthday-details-wrapper'));
         }
@@ -338,7 +374,7 @@ class FrontEndCheckoutOrder extends WooOrderFields
         }
         
         // If displaying both date and time, close the 'outer' flexbox
-        if ($display_date_and_time)
+        if ($display_date && $display_time)
         {
             $this->display_end_div();
         }
@@ -370,10 +406,15 @@ class FrontEndCheckoutOrder extends WooOrderFields
      */
     public function validate_birthday_fields($data, $errors)
     {
+        if (!$this->cart_requires_birthday_details())
+        {
+            return;
+        }
+        
         if (Config::instance()->date_enabled())
         {
             $required = Config::instance()->date_required();
-            // Validation of day depends upon validation of year and month
+
             $year = $this->validate_number_in_post_data(
                 self::BIRTH_YEAR_FIELD_ID,
                 $required,
@@ -392,6 +433,7 @@ class FrontEndCheckoutOrder extends WooOrderFields
                 12
             );
             
+            // Validation of day depends upon validation of year and month
             $max_day = (is_numeric($year) && is_numeric($month)) ? cal_days_in_month(CAL_GREGORIAN, $month, $year) : 31;
             $day = $this->validate_number_in_post_data(
                 self::BIRTH_DAY_FIELD_ID,
@@ -402,12 +444,12 @@ class FrontEndCheckoutOrder extends WooOrderFields
                 $max_day
             );
             
-            $all_fields_filled = !empty($day) && !empty($month) && !empty($year);
+            $all_fields_filled = !is_null($day) && !is_null($month) && !is_null($year);
             $all_fields_empty = is_null($day) && is_null($month) && is_null($year);
 
             // If optional, ensure all fields are either filled and valid or
             // all fields are empty (invalid fields are handled above)
-            if (!$required && (!$all_fields_empty || !$all_fields_filled))
+            if (!$required && !$all_fields_empty && !$all_fields_filled)
             {
                 // Note $day/$month/$year are: integer|null|false (valid|empty|invalid)
                 if (is_null($day))
@@ -448,12 +490,12 @@ class FrontEndCheckoutOrder extends WooOrderFields
                 59
                 );
             
-            $all_fields_filled = !empty($hour) && !empty($minute);
+            $all_fields_filled = !is_null($hour) && !is_null($minute);
             $all_fields_empty = is_null($hour) && is_null($minute);
             
             // If optional, ensure all fields are either filled and valid or
             // all fields are empty (invalid fields are handled above)
-            if (!$required && (!$all_fields_empty || !$all_fields_filled))
+            if (!$required && !$all_fields_empty && !$all_fields_filled)
             {
                 // Note $hour/$minute are: integer|null|false (valid|empty|invalid)
                 if (is_null($hour))
@@ -493,6 +535,11 @@ class FrontEndCheckoutOrder extends WooOrderFields
      */
     public function save_birthday_details($order, $data)
     {
+        if (!$this->cart_requires_birthday_details())
+        {
+            return;
+        }
+        
         if (Config::instance()->place_enabled())
         {
             $place = $_POST[self::BIRTH_PLACE_FIELD_ID] ?? '';
@@ -502,36 +549,37 @@ class FrontEndCheckoutOrder extends WooOrderFields
             }
         }
         
+        $day = 0;
+        $month = 0;
+        $year = 0;
+        $hour = 0;
+        $minute = 0;
+        
         if(Config::instance()->date_enabled())
         {
+            // NB: empty string is valid by not caught by ?? operator
             $day = $_POST[self::BIRTH_DAY_FIELD_ID] ?? 0;
+            $day = is_numeric($day) ? intval($day) : 0;
+            
             $month = $_POST[self::BIRTH_MONTH_FIELD_ID] ?? 0;
+            $month = is_numeric($month) ? intval($month) : 0;
+            
             $year = $_POST[self::BIRTH_YEAR_FIELD_ID] ?? 0;
-            $date_set = !empty($day) && !empty($month) && !empty($year);
-        }
-        else 
-        {
-            $day = 0;
-            $month = 0;
-            $year = 0;
-            $date_set = false;
-        }
-        if (Config::instance()->time_enabled())
-        {
-            // Zero is a valid hour and minute
-            $time_set = isset($_POST[self::BIRTH_HOUR_FIELD_ID])
-                && isset($_POST[self::BIRTH_MINUTE_FIELD_ID]);
-            $hour = $_POST[self::BIRTH_HOUR_FIELD_ID] ?? 0;
-            $minute = $_POST[self::BIRTH_MINUTE_FIELD_ID] ?? 0;
-        }
-        else 
-        {
-            $hour = 0;
-            $minute = 0;
-            $time_set = false;
+            $year = is_numeric($year) ? intval($year) : 0;
         }
 
-        if ($date_set || $time_set)
+        if (Config::instance()->time_enabled())
+        {
+            // NB: empty string is valid by not caught by ?? operator
+            $hour = $_POST[self::BIRTH_HOUR_FIELD_ID] ?? 0;
+            $hour = is_numeric($hour) ? intval($hour) : 0;
+
+            $minute = $_POST[self::BIRTH_MINUTE_FIELD_ID] ?? 0;
+            $minute = is_numeric($minute) ? intval($minute) : 0;
+            
+        }
+
+        if (Config::instance()->date_enabled() || Config::instance()->time_enabled())
         {
             $datetime = new \DateTime("{$year}-{$month}-{$day}T{$hour}:{$minute}+00:00");
             $order->add_meta_data(self::BIRTHDATETIME_ORDER_META, $datetime);

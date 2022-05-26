@@ -160,4 +160,38 @@ abstract class WooOrderFields
         }
         return $months;
     }
+    
+    /**
+     * Determines whether an order requires birthday details to be captured.
+     * This is true if one or more products in the order items requires birth
+     * details to be captured or if birthday details should always be captured.
+     * 
+     * @param \WC_Order|int $order the order to test
+     * @return boolean whether birthday details need to be captured for the
+     *              supplied order.
+     */
+    protected function order_requires_birthday_details($order)
+    {
+        if (Config::instance()->show_always())
+        {
+            return true;
+        }
+        
+        $order = wc_get_order($order);
+        if ($order)
+        {
+            foreach ($order->get_items() as $order_item)
+            {
+                if ($order_item instanceof \WC_Order_Item_Product)
+                {
+                    $product_id = $order_item->get_product_id();
+                    if (WooProductFields::requires_birth_details($product_id))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 }

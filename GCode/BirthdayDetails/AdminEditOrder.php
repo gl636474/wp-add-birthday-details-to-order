@@ -59,6 +59,11 @@ class AdminEditOrder extends WooOrderFields
      */
     public function display_birthday_fields($order)
     {
+        if (!$this->order_requires_birthday_details($order))
+        {
+            return;
+        }
+        
         $date_enabled = Config::instance()->date_enabled();
         $time_enabled = Config::instance()->time_enabled();
         $place_enabled = Config::instance()->place_enabled();
@@ -146,6 +151,10 @@ class AdminEditOrder extends WooOrderFields
     public function save_birthday_fields($order_id)
     {
         $order = wc_get_order( $order_id );
+        if (!$this->order_requires_birthday_details($order))
+        {
+            return;
+        }
         
         $birthdate_string = $_POST[self::BIRTHDATETIME_ORDER_META] ?? null;
         try 
