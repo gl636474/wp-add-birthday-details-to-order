@@ -1,7 +1,7 @@
 <?php
 
 /*
-Plugin Name: GCode Add Birthday Fields To Order
+Plugin Name: Add Birthday Details To Order
 Plugin URI: https://jenniferladd.art/
 Description: Simply adds birthday date, time and location fields to the WooCommerce order
 Version: 1.0.0
@@ -11,10 +11,6 @@ License: GPLv2 or later
 Text Domain: gcode_obf
 */
 
-
-// TODO: Add product metadata to "Require birthday details"
-// TODO: Add code to check for "require all" or >=1 specified products in order
-//       items in both front end and admin.
 
 define( 'OBF_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'OBF_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
