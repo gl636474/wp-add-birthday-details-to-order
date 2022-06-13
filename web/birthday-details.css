@@ -8,7 +8,7 @@
 	display: flex;
 	flex-direction: row;
 	flex-wrap: wrap;
-	align-items: baseline;
+	align-items: end;
 }
 
 /**
@@ -20,14 +20,16 @@
 
 /**
  * Within the date/time fieldsets, put the sub-fields on same row and don't
- * allow wrapping, i.e. keep day/month/year together on same line.
+ * allow wrapping, i.e. keep day/month/year together on same line. Also ensure
+ * space between elements is at start not in middle
  */
 #gcodeobf-date-wrapper,
 #gcodeobf-time-wrapper {
 	display: flex;
 	flex-direction: row;
 	flex-wrap: nowrap;
-	align-items: baseline;
+	align-items: end;
+	text-align: right;
 }
 
 /**
@@ -42,6 +44,8 @@
 /**
  * Sub-fields all same height
  */
+#gcodeobf-date-wrapper select,
+#gcodeobf-time-wrapper select,
 #gcodeobf-date-wrapper input,
 #gcodeobf-time-wrapper input {
 	height: 1.75rem;
@@ -66,10 +70,12 @@
  * Make separators between date/time sub-fields more obvious and give them
  * some space.
  */
-.gcobf_divider {
+#gcodeobf-date-wrapper .gcobf_divider,
+#gcodeobf-time-wrapper .gcobf_divider {
 	font-weight: bold;
 	margin-left: 0.25ex;
 	margin-right: 0.25ex;
+	/*font-size: 1.75rem;*/
 }
 
  
