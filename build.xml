@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model xlink:href="phing.phar/etc/phing-grammar.rng"
+            type="application/xml"
+            schematypens="http://relaxng.org/ns/structure/1.0" ?>
+
+<project name="AddBirthdayDetailsToOrder" default="dist">
+	
+	<property name="src.dir" value="${phing.dir}" />
+	<property name="build.dir" value="${phing.dir}/build" />
+	<property name="dist.dir" value="${phing.dir}/dist" />
+	<property name="zip.file.name" value="wp-add-birthday-field-to-order.zip" />
+	
+	<target name="clean">
+		<delete dir="${build.dir}" includeemptydirs="true" />
+		<delete dir="${dist.dir}" includeemptydirs="true" />
+	</target>
+	
+	<target name="build">
+		<mkdir dir="${build.dir}" />
+		<copy todir="${build.dir}" includeemptydirs="true">
+			<fileset dir="${src.dir}">
+				<include name="GCode/**" />
+				<include name="web/**" />
+				<include name="wp-add-birthday-field-to-order.php" />
+				<include name="LICENSE" />
+			</fileset>
+		</copy>
+	</target>
+	
+	<target name="dist" depends="build" >
+		<mkdir dir="${dist.dir}" />
+		<zip destfile="${dist.dir}/${zip.file.name}" basedir="${build.dir}" includeemptydirs="true" />
+	</target>
+</project>
