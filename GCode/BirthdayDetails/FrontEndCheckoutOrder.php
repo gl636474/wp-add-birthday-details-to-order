@@ -181,7 +181,7 @@ class FrontEndCheckoutOrder extends WooOrderFields
     protected function display_divider($text)
     {
         ?>
-        <span class="gcobf_divider"><?php echo esc_attr($text); ?></span>
+        <p class="gcobf_divider"><?php echo esc_attr($text); ?></p>
         <?php 
     }
     
