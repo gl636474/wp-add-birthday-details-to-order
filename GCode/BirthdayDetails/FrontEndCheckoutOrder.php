@@ -166,7 +166,9 @@ class FrontEndCheckoutOrder extends WooOrderFields
      * 
      * The first part of this function (the majority) is copy-paste from
      * WooCommerce wc-template-functions.php lines 2719 to 2912 (the majority
-     * of the woocommerce_form_field() function). 
+     * of the woocommerce_form_field() function). The one warning is due to an
+     * copy/pasted variable which is unused as we create our own wrapper. This
+     * variable has been left in to make diffs easier.
      * 
      * @param string $key the name of the HTML field 
      * @param array $args details of the field, exactly the same as for the WooCommerce woocommerce_form_field() function (with the aforementioned exceptions).
