@@ -43,181 +43,6 @@ class FrontEndCheckoutOrder extends WooOrderFields
     }
     
     /**
-     * Outputs three fields for the birth date. These may be all SELECT
-     * elements or may be a mixture of SELECT and NUMBER, depending upon
-     * the setting in Config.
-     */
-    protected function display_birthdate_fields()
-    {
-        $as_select = Config::instance()->date_as_select();
-        $required = Config::instance()->date_required();
-        
-        $day = $_REQUEST[self::BIRTH_DAY_FIELD_ID] ?? null;
-        $min_day = 1;
-        $max_day = 31;
-        $day_field_args = array(
-            'type'        => 'number',
-            'label'       => __('Date', OBF_TEXT),
-            'required'    => $required,
-            'placeholder' => __('day', OBF_TEXT),
-            'input_class' => array('gcodeobf_day'),
-        );
-        if ($as_select)
-        {
-            $day_field_args['type'] = 'select';
-            $day_field_args['options'] = array(''=>'--') + range($min_day, $max_day);
-        }
-        else
-        {
-            $day_field_args['custom_attributes']['max'] = $max_day;
-            $day_field_args['custom_attributes']['min'] = $min_day;
-        }
-        woocommerce_form_field(self::BIRTH_DAY_FIELD_ID, $day_field_args, $day);
-        
-        $this->display_divider('/'); 
-    
-        // Always a select, even if other sub-fields are text/numeric
-        $month = $_REQUEST[self::BIRTH_MONTH_FIELD_ID] ?? null;
-        woocommerce_form_field(self::BIRTH_MONTH_FIELD_ID,
-            array(
-                'type'        => 'select',
-                'label'       => __('Month', OBF_TEXT),
-                'options'     => $this->get_birth_months(__('--month--', OBF_TEXT)),
-                'required'    => $required,
-                'input_class' => array('gcodeobf_month'),
-                'label_class' => array('hidden'),
-            ),
-            $month);
-        
-        $this->display_divider('/');
-        
-        $year = $_REQUEST[self::BIRTH_YEAR_FIELD_ID] ?? null;
-        $min_year = 1900;
-        $max_year = date('Y');
-        $year_field_args = array(
-            'type'        => 'number',
-            'label'       => __('Year', OBF_TEXT),
-            'required'    => true,
-            'placeholder' => __('year', OBF_TEXT),
-            'input_class' => array('gcodeobf_year'),
-            'label_class' => array('hidden'),
-        );
-        if ($as_select)
-        {
-            $year_field_args['type'] = 'select';
-            $year_field_args['options'] = array(''=>'----') + range($max_year, $min_year);
-        }
-        else 
-        {
-            $year_field_args['custom_attributes']['max'] = $max_year;
-            $year_field_args['custom_attributes']['min'] = $min_year;
-        }
-        woocommerce_form_field(self::BIRTH_YEAR_FIELD_ID, $year_field_args, $year);
-    }
-
-    /**
-     * Outputs two fields for the birth time. These may be both SELECT
-     * elements or be both NUMBER, depending upon the setting in Config.
-     */
-    protected function display_birthtime_fields()
-    {
-        $as_select = Config::instance()->time_as_select();
-        $required = Config::instance()->time_required();
-        
-        $hour = $_REQUEST[self::BIRTH_HOUR_FIELD_ID] ?? null;
-        $min_hour = 0;
-        $max_hour = 23;
-        $hour_field_args = array(
-            'type'        => 'number',
-            'label'       => __('Time', OBF_TEXT),
-            'required'    => $required,
-            'placeholder' => __('hr', OBF_TEXT),
-            'input_class' => array('gcodeobf_time'),
-        );
-        if ($as_select)
-        {
-            $hour_field_args['type'] = 'select';
-            $hour_field_args['options'] = $this->get_number_options($min_hour, $max_hour, '--');
-        }
-        else
-        {
-            $hour_field_args['custom_attributes']['max'] = $max_hour;
-            $hour_field_args['custom_attributes']['min'] = $min_hour;
-        }
-        woocommerce_form_field(self::BIRTH_HOUR_FIELD_ID, $hour_field_args, $hour);
-        
-        $this->display_divider(':');
-        
-        $minute = $_REQUEST[self::BIRTH_MINUTE_FIELD_ID] ?? null;
-        $min_minute = 0;
-        $max_minute = 59;
-        $minute_field_args = array(
-            'type'        => 'number',
-            'label'       => __('Minute', OBF_TEXT),
-            'required'    => $required,
-            'placeholder' => __('min', OBF_TEXT),
-            'input_class' => array('gcodeobf_time'),
-            'label_class' => array('hidden'),
-        );
-        if ($as_select)
-        {
-            $minute_field_args['type'] = 'select';
-            $minute_field_args['options'] = $this->get_number_options($min_minute, $max_minute, '--');
-        }
-        else
-        {
-            $minute_field_args['custom_attributes']['max'] = $max_minute;
-            $minute_field_args['custom_attributes']['min'] = $min_minute;
-        }
-        woocommerce_form_field(self::BIRTH_MINUTE_FIELD_ID, $minute_field_args, $minute);
-    }
-    /**
-     * Outputs a DIV element with the class "gcobf_divider" containing the
-     * supplied text. Intended to output the slashes within a date or the
-     * colon within a time.
-     * 
-     * @param string $text the text for the divider.
-     */
-    protected function display_divider($text)
-    {
-        ?>
-        <p class="gcobf_divider"><?php echo esc_attr($text); ?></p>
-        <?php 
-    }
-    
-    /**
-     * Outputs a DIV start tag with the specified attributes (e.g.
-     * <code>array(id="my_id")</code> results in: 
-     * <code><div id="my_id"></code>.
-     * 
-     * @param array $attributes the attributes of the DIV (e.g. id, class) as name=>value pairs.
-     */
-    protected function display_start_div($attributes=null)
-    {
-        $attribs_string = '';
-        if (is_array($attributes) && !empty($attributes))
-        {
-            foreach ($attributes as $name=>$value)
-            {
-                $attribs_string .= ' '.$name.'="'.$value.'"';
-            }
-        }
-        ?>
-        <div<?php echo $attribs_string; ?>>
-        <?php 
-    }
-    
-    /**
-     * Outputs a DIV end tag.
-     */
-    protected function display_end_div()
-    {
-        ?>
-        </div>
-        <?php 
-    }
-    
-    /**
      * Validates the specified $_POST argument and sets error(s) accordingly.
      * 
      * @param string $id the ID of the field to validate - this is the key in the $_POST array
@@ -328,6 +153,311 @@ class FrontEndCheckoutOrder extends WooOrderFields
     }
     
     /**
+     * Outputs or returns an HTML field in a WooCOmmerce compatible way. This
+     * behaves exactly the same as <code>woocommerce_form_field()</code> with
+     * the following exceptions:
+     * 
+     *   1. No <code>&lt;p&gt;</code> wrapper is output.
+     *   2. No description is output (this should be on the wrapping multi-field)
+     *   3. A hidden (CSS style <code>display: none;</code>) label is output (for screen readers to identify individual HTML fields) unless a checkbox or radio group is being output.
+     * 
+     * The field HTML is returned as a string if $args['return'] is present and
+     * true, otherwise the HTML is output.
+     * 
+     * The first part of this function (the majority) is copy-paste from
+     * WooCommerce wc-template-functions.php lines 2719 to 2912 (the majority
+     * of the woocommerce_form_field() function). 
+     * 
+     * @param string $key the name of the HTML field 
+     * @param array $args details of the field, exactly the same as for the WooCommerce woocommerce_form_field() function (with the aforementioned exceptions).
+     * @param mixed $value=null the initial value to place in the field.
+     */
+    protected function woocommerce_form_subfield($key, $args, $value=null)
+    {
+        // Start copy-paste from wc-template-functions.php
+        // NB: description and class keys are not used by us here.
+        
+        $defaults = array(
+            'type'              => 'text',
+            'label'             => '',
+            'description'       => '',
+            'placeholder'       => '',
+            'maxlength'         => false,
+            'required'          => false,
+            'autocomplete'      => false,
+            'id'                => $key,
+            'class'             => array(),
+            'label_class'       => array(),
+            'input_class'       => array(),
+            'return'            => false,
+            'options'           => array(),
+            'custom_attributes' => array(),
+            'validate'          => array(),
+            'default'           => '',
+            'autofocus'         => '',
+            'priority'          => '',
+        );
+        
+        $args = wp_parse_args( $args, $defaults );
+        $args = apply_filters( 'woocommerce_form_field_args', $args, $key, $value );
+        
+        if ( $args['required'] ) {
+            $args['class'][] = 'validate-required';
+            $required        = '&nbsp;<abbr class="required" title="' . esc_attr__( 'required', 'woocommerce' ) . '">*</abbr>';
+        } else {
+            $required = '&nbsp;<span class="optional">(' . esc_html__( 'optional', 'woocommerce' ) . ')</span>';
+        }
+        
+        if ( is_string( $args['label_class'] ) ) {
+            $args['label_class'] = array( $args['label_class'] );
+        }
+        
+        if ( is_null( $value ) ) {
+            $value = $args['default'];
+        }
+        
+        // Custom attribute handling.
+        $custom_attributes         = array();
+        $args['custom_attributes'] = array_filter( (array) $args['custom_attributes'], 'strlen' );
+        
+        if ( $args['maxlength'] ) {
+            $args['custom_attributes']['maxlength'] = absint( $args['maxlength'] );
+        }
+        
+        if ( ! empty( $args['autocomplete'] ) ) {
+            $args['custom_attributes']['autocomplete'] = $args['autocomplete'];
+        }
+        
+        if ( true === $args['autofocus'] ) {
+            $args['custom_attributes']['autofocus'] = 'autofocus';
+        }
+        
+        if ( $args['description'] ) {
+            $args['custom_attributes']['aria-describedby'] = $args['id'] . '-description';
+        }
+        
+        if ( ! empty( $args['custom_attributes'] ) && is_array( $args['custom_attributes'] ) ) {
+            foreach ( $args['custom_attributes'] as $attribute => $attribute_value ) {
+                $custom_attributes[] = esc_attr( $attribute ) . '="' . esc_attr( $attribute_value ) . '"';
+            }
+        }
+        
+        if ( ! empty( $args['validate'] ) ) {
+            foreach ( $args['validate'] as $validate ) {
+                $args['class'][] = 'validate-' . $validate;
+            }
+        }
+        
+        $field           = '';
+        $label_id        = $args['id'];
+        $sort            = $args['priority'] ? $args['priority'] : '';
+        $field_container = '<p class="form-row %1$s" id="%2$s" data-priority="' . esc_attr( $sort ) . '">%3$s</p>';
+        
+        switch ( $args['type'] ) {
+            case 'country':
+                $countries = 'shipping_country' === $key ? WC()->countries->get_shipping_countries() : WC()->countries->get_allowed_countries();
+                
+                if ( 1 === count( $countries ) ) {
+                    
+                    $field .= '<strong>' . current( array_values( $countries ) ) . '</strong>';
+                    
+                    $field .= '<input type="hidden" name="' . esc_attr( $key ) . '" id="' . esc_attr( $args['id'] ) . '" value="' . current( array_keys( $countries ) ) . '" ' . implode( ' ', $custom_attributes ) . ' class="country_to_state" readonly="readonly" />';
+                    
+                } else {
+                    $data_label = ! empty( $args['label'] ) ? 'data-label="' . esc_attr( $args['label'] ) . '"' : '';
+                    
+                    $field = '<select name="' . esc_attr( $key ) . '" id="' . esc_attr( $args['id'] ) . '" class="country_to_state country_select ' . esc_attr( implode( ' ', $args['input_class'] ) ) . '" ' . implode( ' ', $custom_attributes ) . ' data-placeholder="' . esc_attr( $args['placeholder'] ? $args['placeholder'] : esc_attr__( 'Select a country / region&hellip;', 'woocommerce' ) ) . '" ' . $data_label . '><option value="">' . esc_html__( 'Select a country / region&hellip;', 'woocommerce' ) . '</option>';
+                    
+                    foreach ( $countries as $ckey => $cvalue ) {
+                        $field .= '<option value="' . esc_attr( $ckey ) . '" ' . selected( $value, $ckey, false ) . '>' . esc_html( $cvalue ) . '</option>';
+                    }
+                    
+                    $field .= '</select>';
+                    
+                    $field .= '<noscript><button type="submit" name="woocommerce_checkout_update_totals" value="' . esc_attr__( 'Update country / region', 'woocommerce' ) . '">' . esc_html__( 'Update country / region', 'woocommerce' ) . '</button></noscript>';
+                    
+                }
+                
+                break;
+            case 'state':
+                /* Get country this state field is representing */
+                $for_country = isset( $args['country'] ) ? $args['country'] : WC()->checkout->get_value( 'billing_state' === $key ? 'billing_country' : 'shipping_country' );
+                $states      = WC()->countries->get_states( $for_country );
+                
+                if ( is_array( $states ) && empty( $states ) ) {
+                    
+                    $field_container = '<p class="form-row %1$s" id="%2$s" style="display: none">%3$s</p>';
+                    
+                    $field .= '<input type="hidden" class="hidden" name="' . esc_attr( $key ) . '" id="' . esc_attr( $args['id'] ) . '" value="" ' . implode( ' ', $custom_attributes ) . ' placeholder="' . esc_attr( $args['placeholder'] ) . '" readonly="readonly" data-input-classes="' . esc_attr( implode( ' ', $args['input_class'] ) ) . '"/>';
+                    
+                } elseif ( ! is_null( $for_country ) && is_array( $states ) ) {
+                    $data_label = ! empty( $args['label'] ) ? 'data-label="' . esc_attr( $args['label'] ) . '"' : '';
+                    
+                    $field .= '<select name="' . esc_attr( $key ) . '" id="' . esc_attr( $args['id'] ) . '" class="state_select ' . esc_attr( implode( ' ', $args['input_class'] ) ) . '" ' . implode( ' ', $custom_attributes ) . ' data-placeholder="' . esc_attr( $args['placeholder'] ? $args['placeholder'] : esc_html__( 'Select an option&hellip;', 'woocommerce' ) ) . '"  data-input-classes="' . esc_attr( implode( ' ', $args['input_class'] ) ) . '" ' . $data_label . '>
+						<option value="">' . esc_html__( 'Select an option&hellip;', 'woocommerce' ) . '</option>';
+                    
+                    foreach ( $states as $ckey => $cvalue ) {
+                        $field .= '<option value="' . esc_attr( $ckey ) . '" ' . selected( $value, $ckey, false ) . '>' . esc_html( $cvalue ) . '</option>';
+                    }
+                    
+                    $field .= '</select>';
+                    
+                } else {
+                    
+                    $field .= '<input type="text" class="input-text ' . esc_attr( implode( ' ', $args['input_class'] ) ) . '" value="' . esc_attr( $value ) . '"  placeholder="' . esc_attr( $args['placeholder'] ) . '" name="' . esc_attr( $key ) . '" id="' . esc_attr( $args['id'] ) . '" ' . implode( ' ', $custom_attributes ) . ' data-input-classes="' . esc_attr( implode( ' ', $args['input_class'] ) ) . '"/>';
+                    
+                }
+                
+                break;
+            case 'textarea':
+                $field .= '<textarea name="' . esc_attr( $key ) . '" class="input-text ' . esc_attr( implode( ' ', $args['input_class'] ) ) . '" id="' . esc_attr( $args['id'] ) . '" placeholder="' . esc_attr( $args['placeholder'] ) . '" ' . ( empty( $args['custom_attributes']['rows'] ) ? ' rows="2"' : '' ) . ( empty( $args['custom_attributes']['cols'] ) ? ' cols="5"' : '' ) . implode( ' ', $custom_attributes ) . '>' . esc_textarea( $value ) . '</textarea>';
+                
+                break;
+            case 'checkbox':
+                $field = '<label class="checkbox ' . implode( ' ', $args['label_class'] ) . '" ' . implode( ' ', $custom_attributes ) . '>
+						<input type="' . esc_attr( $args['type'] ) . '" class="input-checkbox ' . esc_attr( implode( ' ', $args['input_class'] ) ) . '" name="' . esc_attr( $key ) . '" id="' . esc_attr( $args['id'] ) . '" value="1" ' . checked( $value, 1, false ) . ' /> ' . $args['label'] . $required . '</label>';
+                
+                break;
+            case 'text':
+            case 'password':
+            case 'datetime':
+            case 'datetime-local':
+            case 'date':
+            case 'month':
+            case 'time':
+            case 'week':
+            case 'number':
+            case 'email':
+            case 'url':
+            case 'tel':
+                $field .= '<input type="' . esc_attr( $args['type'] ) . '" class="input-text ' . esc_attr( implode( ' ', $args['input_class'] ) ) . '" name="' . esc_attr( $key ) . '" id="' . esc_attr( $args['id'] ) . '" placeholder="' . esc_attr( $args['placeholder'] ) . '"  value="' . esc_attr( $value ) . '" ' . implode( ' ', $custom_attributes ) . ' />';
+                
+                break;
+            case 'hidden':
+                $field .= '<input type="' . esc_attr( $args['type'] ) . '" class="input-hidden ' . esc_attr( implode( ' ', $args['input_class'] ) ) . '" name="' . esc_attr( $key ) . '" id="' . esc_attr( $args['id'] ) . '" value="' . esc_attr( $value ) . '" ' . implode( ' ', $custom_attributes ) . ' />';
+                
+                break;
+            case 'select':
+                $field   = '';
+                $options = '';
+                
+                if ( ! empty( $args['options'] ) ) {
+                    foreach ( $args['options'] as $option_key => $option_text ) {
+                        if ( '' === $option_key ) {
+                            // If we have a blank option, select2 needs a placeholder.
+                            if ( empty( $args['placeholder'] ) ) {
+                                $args['placeholder'] = $option_text ? $option_text : __( 'Choose an option', 'woocommerce' );
+                            }
+                            $custom_attributes[] = 'data-allow_clear="true"';
+                        }
+                        $options .= '<option value="' . esc_attr( $option_key ) . '" ' . selected( $value, $option_key, false ) . '>' . esc_html( $option_text ) . '</option>';
+                    }
+                    
+                    $field .= '<select name="' . esc_attr( $key ) . '" id="' . esc_attr( $args['id'] ) . '" class="select ' . esc_attr( implode( ' ', $args['input_class'] ) ) . '" ' . implode( ' ', $custom_attributes ) . ' data-placeholder="' . esc_attr( $args['placeholder'] ) . '">
+							' . $options . '
+						</select>';
+                }
+                
+                break;
+            case 'radio':
+                $label_id .= '_' . current( array_keys( $args['options'] ) );
+                
+                if ( ! empty( $args['options'] ) ) {
+                    foreach ( $args['options'] as $option_key => $option_text ) {
+                        $field .= '<input type="radio" class="input-radio ' . esc_attr( implode( ' ', $args['input_class'] ) ) . '" value="' . esc_attr( $option_key ) . '" name="' . esc_attr( $key ) . '" ' . implode( ' ', $custom_attributes ) . ' id="' . esc_attr( $args['id'] ) . '_' . esc_attr( $option_key ) . '"' . checked( $value, $option_key, false ) . ' />';
+                        $field .= '<label for="' . esc_attr( $args['id'] ) . '_' . esc_attr( $option_key ) . '" class="radio ' . implode( ' ', $args['label_class'] ) . '">' . esc_html( $option_text ) . '</label>';
+                    }
+                }
+                
+                break;
+        }
+        
+        // End copy-paste from wc-template-functions.php
+        
+        // Create and prepend label (unless label created above for radio buttons)
+        if ( $args['label'] && 'checkbox' !== $args['type'] ) 
+        {
+            $label = '<label id="' . $args['id'] . '_label" for="' . esc_attr( $label_id ) . '" class="hidden">' . wp_kses_post( $args['label'] ) . $required . '</label>';
+            $field = $label . $field;
+        }
+        
+        if ($args['return'])
+        {
+            return $field;
+        }
+        else 
+        {
+            echo $field;
+        }
+    }
+    
+    /**
+     * Outputs a field comprised of multiple HTML inputs or selects or
+     * combination thereof.
+     * 
+     * There is no description parameter as this does not work with multi-
+     * input fields.
+     * 
+     * @param array $field array containing the following keys:
+     *                 * name - String. Mandatory. Name for the composite field
+     *                 * id - String. Optional. HTML ID for the composite field
+     *                 * data-priority - String. Optional.
+     *                 * class - Array. Optional. CSS classes to be applied to the \Container
+     *                 * required - Boolean. Optional. Whether the subfields must have values entered.
+     *                 * label - String. Optional. Name for the label for the composite field
+     * @param array $subfields an array  of sub-field arrays. See doc for <code>woocommerce_form_subfield</code> for content of the sub-field array.
+     * @see woocommerce_form_subfield()
+     */
+    protected function woocommerce_form_multifield($field, $subfields)
+    {
+        $field_defaults = array(
+            'id'            => $field['name'],
+            'data_priority' => '',
+            'class'         => array(),
+            'required'      => false,
+            'label'         => '',
+            'divider'       => '',
+        );        
+
+        $field = wp_parse_args( $field, $field_defaults );
+        
+        $classes = array('form-row');
+        if (is_array($field['class']))
+        {
+            $classes = array_merge($classes, $field['class']);
+        }
+        elseif (!empty($field['class'])) 
+        {
+            $classes[] = strval($field['class']);
+        }
+        
+        if ($field['required'])
+        {
+            $classes[] = 'validate-required';
+        }
+        $classes = join(' ', $classes);
+
+        $label_suffix = $field['required'] ? '<abbr class="required" title="required">*</abbr>' : '('.__('optional', 'woocommerce').')';
+        
+        echo "<p class=\"{$classes}\" id=\"{$field['id']}_field\" data-priority=\"{$field['data_priority']}\">";
+        echo "<label class=\"gcobf_field_label\">{$field['label']}&nbsp;{$label_suffix}</label>";
+        echo '<span class="woocommerce-input-wrapper">';
+        
+        $first_time = true;
+        foreach ($subfields as $subfield)
+        {
+            if (!$first_time && !empty($field['divider']))
+            {
+                echo '<span class="gcobf_divider">' . $field['divider'] . '</span>';
+            }
+            $this->woocommerce_form_subfield($subfield['name'], $subfield, $subfield['value'] ?? null);
+            $first_time = false;
+        }
+        
+        echo '</span></p>';
+    }
+    
+    /**
      * Callback function to be called by WordPress.
      * 
      * Output the birthday details heading and fields. What is displayed and
@@ -351,44 +481,94 @@ class FrontEndCheckoutOrder extends WooOrderFields
             $this->display_heading();
         }
         
-        // If displaying both date and time, put them in an 'outer' flexbox
-        if ($display_date && $display_time)
-        {
-            $this->display_start_div(array('id'=>'gcodeobf-birthday-details-wrapper'));
-        }
-        
         if ($display_date)
         {
-            // Date subfields all need to be in an 'inner' flexbox
-            $this->display_start_div(array('id'=>'gcodeobf-date-wrapper'));
-            $this->display_birthdate_fields();
-            $this->display_end_div();
+            $required = Config::instance()->date_required();
+            $type = Config::instance()->date_as_select() ? 'select' : 'number';
+            $this->woocommerce_form_multifield(
+                array(
+                    'name'     => 'gcobf_birthdate',
+                    'required' => $required,
+                    'label'    => __('Date', OBF_TEXT),
+                    'divider'  => '/',
+                    'class'    => array('gcobf_birth_details'),
+                    'description' => 'The date of your birth',
+                ), 
+                array(
+                    array(
+                        'name'        => 'gcobf_birthday',
+                        'type'        => $type,
+                        'options'     => $this->get_number_options(1, 31, __('-day-', OBF_TEXT)),
+                        'required'    => $required,
+                        'label'       => __('Birth Day', OBF_TEXT),
+                        'value'       => $_REQUEST[self::BIRTH_DAY_FIELD_ID] ?? null,
+                        'placeholder' => __('day', OBF_TEXT),
+                    ),
+                    array(
+                        'name'     => 'gcobf_birthmonth',
+                        'type'     => 'select',
+                        'options'  => $this->get_birth_months(__('-month-', OBF_TEXT)),
+                        'required' => $required,
+                        'label'    => __('Birth Month', OBF_TEXT),
+                        'value'    => $_REQUEST[self::BIRTH_MONTH_FIELD_ID] ?? null,
+                    ),
+                    array(
+                        'name'        => 'gcobf_birthyear',
+                        'type'        => $type,
+                        'options'     => $this->get_number_options(self::MIN_YEAR, self::MAX_YEAR, __('-year-', OBF_TEXT)),
+                        'required'    => $required,
+                        'label'       => __('Birth Year', OBF_TEXT),
+                        'value'       => $_REQUEST[self::BIRTH_YEAR_FIELD_ID] ?? null,
+                        'placeholder' => __('year', OBF_TEXT),
+                    ),
+                )
+            );
         }
         
         if ($display_time)
         {
-            // Time subfields all need to be in an 'inner' flexbox
-            $this->display_start_div(array('id'=>'gcodeobf-time-wrapper'));
-            $this->display_birthtime_fields();
-            $this->display_end_div();
+            $required = Config::instance()->time_required();
+            $type = Config::instance()->time_as_select() ? 'select' : 'number';
+            $this->woocommerce_form_multifield(
+                array(
+                    'name'     => 'gcobf_birthtime',
+                    'required' => $required,
+                    'label'    => __('Time', OBF_TEXT),
+                    'divider'  => ':',
+                    'class'    => array('gcobf_birth_details'),
+                ),
+                array(
+                    array(
+                        'name'        => 'gcobf_birthhour',
+                        'type'        => $type,
+                        'options'     => $this->get_number_options(0, 23, __('-hr-', OBF_TEXT)),
+                        'required'    => $required,
+                        'label'       => __('Birth Hour', OBF_TEXT),
+                        'value'       => $_REQUEST[self::BIRTH_HOUR_FIELD_ID] ?? null,
+                        'placeholder' => __('hr', OBF_TEXT),
+                    ),
+                    array(
+                        'name'        => 'gcobf_birthminute',
+                        'type'        => $type,
+                        'options'     => $this->get_number_options(0, 59, __('-min-', OBF_TEXT)),
+                        'required'    => $required,
+                        'label'       => __('Birth Minite', OBF_TEXT),
+                        'value'       => $_REQUEST[self::BIRTH_MINUTE_FIELD_ID] ?? null,
+                        'placeholder' => __('min', OBF_TEXT),
+                    ),
+                )
+                );
         }
-        
-        // If displaying both date and time, close the 'outer' flexbox
-        if ($display_date && $display_time)
-        {
-            $this->display_end_div();
-        }
-        
+
         if ($display_place)
         {
             // Always a text field and never in a wrapper.
             woocommerce_form_field(self::BIRTH_PLACE_FIELD_ID,
                 array(
-                    'type'        => 'text',
-                    'label'       => __('Location', OBF_TEXT),
-                    'required'    => Config::instance()->place_required(),
-                    'placeholder' => __('town, county and country', OBF_TEXT),
-//                    'label_class' => array('gcodeobf_label'),
+                'type'        => 'text',
+                'label'       => __('Location', OBF_TEXT),
+                'required'    => Config::instance()->place_required(),
+                'placeholder' => __('town, county and country', OBF_TEXT),
                 ),
                 $_REQUEST[self::BIRTH_PLACE_FIELD_ID] ?? null
             );

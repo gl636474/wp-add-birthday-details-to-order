@@ -89,19 +89,20 @@ abstract class WooOrderFields
     
     /**
      * Returns an array with keys in the specified range and values being the
-     * string version with leading zeros. The start can be greater than the end
-     * in which case the range will count down.
+     * string version (optionally with leading zeros). The start can be greater
+     * than the end in which case the range will count down.
      * 
      * @param int $start the start of the range
      * @param int $end the end of the range
      * @param string $placeholder the text for the blank 'placeholder' option. If
      *               omitted or null then no placeholder option will be output.
      * @param int $step step through the range in jumps of this amount
+     * @param bool $leading_zeros whether to include leading zeros in the values.
      * @return array with the keys being each integer in the range and the values
      *               being the stringified integer with leading zero(s) if
      *               necessary to make all value strings the same length.
      */
-    protected function get_number_options($start, $end, $placeholder=null, $step=1)
+    protected function get_number_options($start, $end, $placeholder=null, $step=1, $leading_zeros=true)
     {
         if ($start < $end)
         {
@@ -129,7 +130,14 @@ abstract class WooOrderFields
         $format = '%0'.$length.'u';
         for ($i=$start; $i>=$min && $i<=$max; $i+=$step)
         {
-            $options[$i] = sprintf($format, $i);
+            if ($leading_zeros)
+            {
+                $options[$i] = sprintf($format, $i);
+            }
+            else 
+            {
+                $options[$i] = strval($i);
+            }
         }
         return $options;
     }

@@ -1,81 +1,66 @@
 
 /**
- * The #gcodeobf-birthday-details-wrapper DIV is only present if we are showing
- * both date and time fieldsets. If so, try to keep both date and time
- * fieldsets on one line but allow wrapping.
- */
-#gcodeobf-birthday-details-wrapper {
-	display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
-	align-items: end;
-}
-
-/**
- * If showing both (see previous comment), add margin in between.
- */
-#gcodeobf-birthday-details-wrapper #gcodeobf-date-wrapper {
-	margin-right: 1ex;
-}
-
-/**
- * Within the date/time fieldsets, put the sub-fields on same row and don't
- * allow wrapping, i.e. keep day/month/year together on same line. Also ensure
- * space between elements is at start not in middle
- */
-#gcodeobf-date-wrapper,
-#gcodeobf-time-wrapper {
-	display: flex;
-	flex-direction: row;
-	flex-wrap: nowrap;
-	align-items: end;
-	text-align: right;
-}
-
-/**
  * Hide labels we don't want shown (but leave in HTML for screen readers).
  * Very high priority, hence IDs and others in selectors
  */
-#gcodeobf-date-wrapper p.form-row label.hidden,
-#gcodeobf-time-wrapper p.form-row label.hidden {
+p.gcobf_birth_details label#gcobf_birthday_label.hidden,
+p.gcobf_birth_details label#gcobf_birthmonth_label.hidden, 
+p.gcobf_birth_details label#gcobf_birthyear_label.hidden,
+p.gcobf_birth_details label#gcobf_birthhour_label.hidden,
+p.gcobf_birth_details label#gcobf_birthminute_label.hidden {
 	display: none;
 }
 
 /**
  * Sub-fields all same height
  */
-#gcodeobf-date-wrapper select,
-#gcodeobf-time-wrapper select,
-#gcodeobf-date-wrapper input,
-#gcodeobf-time-wrapper input {
+.gcobf_birth_details select,
+.gcobf_birth_details input {
 	height: 1.75rem;
 }
 
 /**
- * Make day/hour/minute number sub-fields min width
+ * Set day/hour/minute number sub-fields to min width
  */
-#gcodeobf-date-wrapper .gcodeobf_day,
-#gcodeobf-time-wrapper .gcodeobf_time {
+.gcobf_birth_details #gcobf_birthday,
+.gcobf_birth_details #gcobf_birthhour,
+.gcobf_birth_details #gcobf_birthminute {
 	width: 9ex;
 }
 
 /**
- * Make year number sub-fields min width
+ * Set year number sub-fields to min width
  */
-#gcodeobf-date-wrapper .gcodeobf_year {
+.gcobf_birth_details #gcobf_birthyear {
 	width: 11ex;
 }
 
 /**
- * Make separators between date/time sub-fields more obvious and give them
- * some space.
+ * Set month sub-field to max width
  */
-#gcodeobf-date-wrapper .gcobf_divider,
-#gcodeobf-time-wrapper .gcobf_divider {
-	font-weight: bold;
-	margin-left: 0.25ex;
-	margin-right: 0.25ex;
-	/*font-size: 1.75rem;*/
+.gcobf_birth_details #gcobf_birthmonth {
+	max-width: 20ex;
+}
+/**
+ * Add space around dividers and make bit more obvious
+ */
+.gcobf_birth_details .gcobf_divider {
+	margin-left: 0.5ex;
+    margin-right: 0.5ex;
+    font-weight: bold;
 }
 
- 
+/**
+ * Add space after labels where fields are on same line
+ */
+#gcobf_birthdate_field .gcobf_field_label,
+#gcobf_birthtime_field .gcobf_field_label {
+    margin-right: 0.5ex;
+}
+
+/**
+ * Align the sub-field dividers, inputs and selects
+ */
+.gcobf_birth_details span {
+    vertical-align: top;
+}
